@@ -30,6 +30,8 @@ Copy `.env.example` to `.env.local`.
 | Variable | What it does |
 | --- | --- |
 | `NEXT_PUBLIC_GTM_ID` | Google Tag Manager container ID (`GTM-XXXXXXX`). Leave empty to load no analytics. |
+| `NEXT_PUBLIC_SITE_URL` | The live address (`https://lekhkit.com`). Used for the sitemap, robots.txt, canonical link and social cards. |
+| `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` | Google Search Console token (optional). Rendered as a `google-site-verification` meta tag. |
 
 `NEXT_PUBLIC_` variables are baked in at build time, so redeploy after changing one.
 
@@ -41,4 +43,5 @@ Import the repository on [Vercel](https://vercel.com/new). The site is fully sta
 
 - `src/lib/unicode.ts`: the Unicode styling engine (with `unicode.test.ts`). Strikethrough uses U+0335 because the older U+0336 draws at the baseline in Segoe UI, which is the font LinkedIn uses on Windows. Older text that used U+0336 is still recognised.
 - `src/components/`: editor, toolbar, menus, preview card, attachment tray, dialogs.
+- `src/app/robots.ts`, `sitemap.ts`, `opengraph-image.tsx`: SEO. Vercel preview deployments are set to `noindex` and `Disallow: /` so they never compete with the production site. List new public pages in `src/lib/site.ts` (`PUBLIC_PATHS`) so they reach the sitemap.
 - `src/app/globals.css`: design tokens (light and dark) and all styles.

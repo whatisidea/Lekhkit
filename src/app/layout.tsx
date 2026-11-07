@@ -1,22 +1,26 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
+import { GOOGLE_VERIFICATION, IS_INDEXABLE, SITE_DESCRIPTION, SITE_NAME, SITE_TITLE, SITE_URL } from '@/lib/site';
 import { GoogleTagManager, GoogleTagManagerNoScript } from '@/components/GoogleTagManager';
 
 const inter = Inter({ subsets: ['latin'], weight: ['400', '500', '600', '700'], variable: '--font-inter', display: 'swap' });
 
-const title = 'LekhKit — LinkedIn Post Formatter';
-const description =
-  'Free LinkedIn post formatter. Bold, italic, underline, strikethrough, lists and emoji, with a live desktop and mobile preview. Runs in your browser. Nothing is uploaded.';
+const title = SITE_TITLE;
+const description = SITE_DESCRIPTION;
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title,
   description,
-  applicationName: 'LekhKit',
-  appleWebApp: { capable: true, title: 'LekhKit', statusBarStyle: 'default' },
+  applicationName: SITE_NAME,
+  alternates: { canonical: '/' },
+  appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: 'default' },
   keywords: ['LinkedIn post formatter', 'LinkedIn bold text', 'LinkedIn italic text', 'unicode text generator'],
-  openGraph: { title, description, type: 'website', siteName: 'LekhKit' },
-  twitter: { card: 'summary', title, description },
+  robots: IS_INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
+  openGraph: { title, description, type: 'website', siteName: SITE_NAME, url: '/', locale: 'en_US' },
+  twitter: { card: 'summary_large_image', title, description },
+  ...(GOOGLE_VERIFICATION ? { verification: { google: GOOGLE_VERIFICATION } } : {}),
 };
 
 export const viewport: Viewport = {
