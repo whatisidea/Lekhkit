@@ -1,0 +1,13 @@
+node_modules
+.next
+out
+.env*.local
+npm-debug.log*
+.DS_Store
+*.tsbuildinfo
+next-env.d.ts
+
+.next-test
+
+# third-party design skills used while building (not part of the app)
+.claude/
