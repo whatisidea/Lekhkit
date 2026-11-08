@@ -129,8 +129,41 @@ function safeCut(text: string, n: number) {
   return n;
 }
 
+/* The first web address in the post, the way LinkedIn picks the one it makes a preview card for. */
+function firstLink(text: string): { host: string; known: boolean } | null {
+  const m = text.match(/(?:https?:\/\/|www\.)[^\s]+/i);
+  if (!m) return null;
+  const raw = m[0].replace(/[.,;:!?)\]}'"]+$/, '');
+  try {
+    const host = new URL(/^https?:/i.test(raw) ? raw : 'https://' + raw).hostname.replace(/^www\./, '');
+    return host.includes('.') ? { host, known: host === 'lekhkit.com' } : null;
+  } catch {
+    return null;
+  }
+}
+
+/* LinkedIn shows a card (picture, title, domain) under a post that holds a link and no other media.
+   LekhKit cannot fetch the real page, so it shows the domain; our own address shows its real title and picture. */
+function LinkCard({ host, known }: { host: string; known: boolean }) {
+  return (
+    <div className="pv-link" role="img" aria-label={'Link preview for ' + host}>
+      <div className="pv-link-img">
+        {known
+          // eslint-disable-next-line @next/next/no-img-element
+          ? <img src="/opengraph-image" alt="" />
+          : <span className="pv-link-ph" aria-hidden="true"><Icon name="globe" /></span>}
+      </div>
+      <div className="pv-link-txt">
+        <b>{known ? 'LekhKit — LinkedIn Post Formatter' : host}</b>
+        <span>{host}</span>
+      </div>
+    </div>
+  );
+}
+
 export default function PostCard({ device, text, atts, profile, expanded, onExpand, onCollapse, onSample, tick }: Props) {
   const empty = !text.trim() && !atts.length;
+  const link = !atts.length ? firstLink(text) : null;
   const measure = useRef<HTMLParagraphElement>(null);
   const [lightbox, setLightbox] = useState<number | null>(null);
   /** Where "…more" would cut the text, or null when the whole post fits in three lines. */
@@ -190,6 +223,7 @@ export default function PostCard({ device, text, atts, profile, expanded, onExpa
       </div>
 
       <Media atts={atts} onOpenImage={setLightbox} />
+      {link && <LinkCard host={link.host} known={link.known} />}
       <Lightbox images={atts.filter((x) => x.kind === 'image')} index={lightbox} onChange={setLightbox} onClose={() => setLightbox(null)} />
 
       <div className="pv-counts" aria-hidden="true">
