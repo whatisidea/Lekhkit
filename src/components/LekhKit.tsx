@@ -573,6 +573,7 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
               <ul>
                 <li>Styled text is made of special characters. It pastes into LinkedIn as it looks here, but it is not searchable and some screen readers read it badly. Use it for emphasis, not whole posts.</li>
                 <li>LinkedIn sometimes removes empty lines when you paste. “Keep blank lines” puts one invisible character on each empty line so your spacing survives. Turn it off if you would rather copy the text exactly as typed.</li>
+                <li>A web address in your post shows a link card in the preview, as LinkedIn does. LekhKit cannot load other sites, so it shows the domain; LinkedIn fills in the real title and picture.</li>
                 <li>Attachments and mentions are preview only. Copying carries text, so add media and tag people inside LinkedIn.</li>
                 <li>The counter counts each styled letter as 2 characters to stay on the safe side. LinkedIn’s own count may differ.</li>
               </ul>
