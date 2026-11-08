@@ -1,8 +1,24 @@
 import Link from 'next/link';
 import SiteThemeToggle from './SiteThemeToggle';
 import MiniConverter from './MiniConverter';
-import { PAGE_BY_SLUG, TOOL_PAGES, GUIDE_PAGES, INFO_PAGES, type SeoPage } from '@/lib/pages';
+import { PAGES, PAGE_BY_SLUG, TOOL_PAGES, GUIDE_PAGES, INFO_PAGES, type SeoPage } from '@/lib/pages';
+import { INTL_PAGES, LANGS, UI, intlPage, intlPagesFor } from '@/lib/i18n';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
+
+/** Address of a page: English pages live at /slug, translated pages at /lang/slug. */
+export const pagePath = (p: SeoPage) => (p.lang ? `/${p.lang}/${p.slug}` : `/${p.slug}`);
+
+/** The same page in every language it exists in (used for hreflang). Keys are language codes plus x-default. */
+export function languageAlternates(page: SeoPage): Record<string, string> | undefined {
+  if (!page.group) return undefined;
+  const all = [...PAGES, ...INTL_PAGES].filter((p) => p.group === page.group);
+  if (all.length < 2) return undefined;
+  const out: Record<string, string> = {};
+  for (const p of all) out[p.lang || 'en'] = SITE_URL + pagePath(p);
+  const en = all.find((p) => !p.lang);
+  if (en) out['x-default'] = SITE_URL + pagePath(en);
+  return out;
+}
 
 function Brand() {
   return (
@@ -19,7 +35,7 @@ function Brand() {
 }
 
 function jsonLd(page: SeoPage) {
-  const url = `${SITE_URL}/${page.slug}`;
+  const url = SITE_URL + pagePath(page);
   const graph: object[] = [
     {
       '@type': 'BreadcrumbList',
@@ -34,7 +50,7 @@ function jsonLd(page: SeoPage) {
       url,
       name: page.h1,
       description: page.description,
-      inLanguage: 'en',
+      inLanguage: page.lang || 'en',
       dateModified: page.updated,
       isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
       ...(page.kind === 'guide'
@@ -55,33 +71,61 @@ function jsonLd(page: SeoPage) {
   return { '@context': 'https://schema.org', '@graph': graph };
 }
 
-export function SiteFooter() {
+export function SiteFooter({ lang }: { lang?: string }) {
+  const ui = lang ? UI[lang] : undefined;
   const col = (title: string, items: SeoPage[]) => (
     <div>
       <h2 className="cp-foot-h">{title}</h2>
-      <ul>{items.map((p) => <li key={p.slug}><Link href={'/' + p.slug}>{p.label}</Link></li>)}</ul>
+      <ul>{items.map((p) => <li key={pagePath(p)}><Link href={pagePath(p)}>{p.label}</Link></li>)}</ul>
+    </div>
+  );
+  const langCol = (
+    <div>
+      <h2 className="cp-foot-h">Languages</h2>
+      <ul>
+        <li><Link href="/">English</Link></li>
+        {LANGS.map((l) => {
+          const first = intlPagesFor(l.code)[0];
+          return <li key={l.code}><Link href={pagePath(first)} hrefLang={l.code} lang={l.code}>{l.name}</Link></li>;
+        })}
+      </ul>
     </div>
   );
   return (
     <footer className="site-foot cp-foot">
       <div className="wrap">
         <div className="cp-foot-grid">
-          {col('Tools', TOOL_PAGES)}
-          {col('Guides', GUIDE_PAGES)}
-          {col('LekhKit', INFO_PAGES)}
+          {lang ? (
+            <>
+              {col(ui!.tools, intlPagesFor(lang))}
+              {langCol}
+            </>
+          ) : (
+            <>
+              {col('Tools', TOOL_PAGES)}
+              {col('Guides', GUIDE_PAGES)}
+              {col('LekhKit', INFO_PAGES)}
+              {langCol}
+            </>
+          )}
         </div>
-        <p><strong translate="no">LekhKit</strong> · Free LinkedIn post formatter. Your text stays in your browser and is never uploaded. Not affiliated with LinkedIn.</p>
+        <p><strong translate="no">LekhKit</strong> · {ui ? ui.footerLine : 'Free LinkedIn post formatter. Your text stays in your browser and is never uploaded. Not affiliated with LinkedIn.'}</p>
       </div>
     </footer>
   );
 }
 
 export default function ContentPage({ page }: { page: SeoPage }) {
-  const related = (page.related || []).map((s) => PAGE_BY_SLUG[s]).filter(Boolean);
+  const lang = page.lang;
+  const ui = lang ? UI[lang] : undefined;
+  const related = (page.related || [])
+    .map((s) => (lang ? intlPage(lang, s) : PAGE_BY_SLUG[s]))
+    .filter((p): p is SeoPage => Boolean(p));
+  const englishTwin = lang && page.group ? PAGES.find((p) => p.group === page.group) : undefined;
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(page)) }} />
-      <a className="skip" href="#main">Skip to the content</a>
+      <a className="skip" href="#main">{ui ? ui.skip : 'Skip to the content'}</a>
       <header className="top">
         <div className="wrap">
           <Brand />
@@ -96,10 +140,11 @@ export default function ContentPage({ page }: { page: SeoPage }) {
         <article className="cp-article">
           <h1>{page.h1}</h1>
           <p className="cp-lead">{page.intro}</p>
-          {page.mode ? <MiniConverter mode={page.mode} /> : null}
+          {page.mode ? <MiniConverter mode={page.mode} ui={ui} /> : null}
           {page.kind !== 'info' ? (
             <p className="cp-cta">
-              Writing a full post? <Link href="/">Open the LekhKit editor</Link> for bold, italic, lists, emoji and a live desktop and mobile preview.
+              {ui ? ui.ctaBefore : 'Writing a full post?'} <Link href="/">{ui ? ui.ctaLink : 'Open the LekhKit editor'}</Link>{' '}
+              {ui ? ui.ctaAfter : 'for bold, italic, lists, emoji and a live desktop and mobile preview.'}
             </p>
           ) : null}
 
@@ -113,7 +158,7 @@ export default function ContentPage({ page }: { page: SeoPage }) {
 
           {page.faq?.length ? (
             <section>
-              <h2>Frequently asked questions</h2>
+              <h2>{ui ? ui.faq : 'Frequently asked questions'}</h2>
               <dl className="cp-faq">
                 {page.faq.map((f) => (
                   <div key={f.q}>
@@ -125,17 +170,18 @@ export default function ContentPage({ page }: { page: SeoPage }) {
             </section>
           ) : null}
 
-          {related.length ? (
+          {related.length || englishTwin ? (
             <section>
-              <h2>Related</h2>
+              <h2>{ui ? ui.related : 'Related'}</h2>
               <ul className="cp-related">
-                {related.map((r) => <li key={r.slug}><Link href={'/' + r.slug}>{r.label}</Link></li>)}
+                {related.map((r) => <li key={pagePath(r)}><Link href={pagePath(r)}>{r.label}</Link></li>)}
+                {englishTwin ? <li><Link href={pagePath(englishTwin)} hrefLang="en" lang="en">{ui!.english}</Link></li> : null}
               </ul>
             </section>
           ) : null}
         </article>
       </main>
-      <SiteFooter />
+      <SiteFooter lang={lang} />
     </>
   );
 }

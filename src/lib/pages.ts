@@ -9,6 +9,10 @@ export interface Section { h2: string; paras?: string[]; list?: string[]; ordere
 export interface Faq { q: string; a: string }
 export interface SeoPage {
   slug: string;
+  /** Language code. English pages leave this out. */
+  lang?: string;
+  /** Pages in different languages with the same group are translations of each other (used for hreflang). */
+  group?: string;
   kind: 'tool' | 'guide' | 'info';
   /** <title> tag, about 50-60 characters. */
   title: string;
@@ -31,6 +35,7 @@ const UPDATED = '2026-11-08';
 export const PAGES: SeoPage[] = [
   {
     slug: 'linkedin-bold-text-generator',
+    group: 'bold',
     kind: 'tool',
     title: 'LinkedIn Bold Text Generator: Free, Copy and Paste | LekhKit',
     h1: 'LinkedIn Bold Text Generator',
@@ -84,6 +89,7 @@ export const PAGES: SeoPage[] = [
   },
   {
     slug: 'linkedin-italic-text-generator',
+    group: 'italic',
     kind: 'tool',
     title: 'LinkedIn Italic Text Generator: Free Copy and Paste | LekhKit',
     h1: 'LinkedIn Italic Text Generator',
@@ -133,6 +139,7 @@ export const PAGES: SeoPage[] = [
   },
   {
     slug: 'linkedin-strikethrough-text-generator',
+    group: 'strike',
     kind: 'tool',
     title: 'LinkedIn Strikethrough Text Generator: Free | LekhKit',
     h1: 'LinkedIn Strikethrough Text Generator',
@@ -177,6 +184,7 @@ export const PAGES: SeoPage[] = [
   },
   {
     slug: 'linkedin-underline-text',
+    group: 'underline',
     kind: 'tool',
     title: 'LinkedIn Underline Text Generator: Free Copy and Paste | LekhKit',
     h1: 'LinkedIn Underline Text Generator',
@@ -218,6 +226,7 @@ export const PAGES: SeoPage[] = [
   },
   {
     slug: 'linkedin-bullet-points',
+    group: 'bullets',
     kind: 'tool',
     title: 'LinkedIn Bullet Points: Copy and Paste Lists | LekhKit',
     h1: 'LinkedIn Bullet Points and List Maker',
@@ -539,12 +548,6 @@ export const PAGES: SeoPage[] = [
         paras: ['There are no accounts and no payments on LekhKit.'],
       },
       {
-        h2: 'Third parties',
-        paras: [
-          'The site is hosted on Vercel, which may log standard request data such as IP address for security and performance. Google, via Tag Manager and Analytics, processes the usage data described above under its own policies.',
-        ],
-      },
-      {
         h2: 'Your choices',
         paras: ['You can block cookies or analytics scripts in your browser, and the tool will still work.'],
       },
@@ -553,6 +556,9 @@ export const PAGES: SeoPage[] = [
     updated: UPDATED,
   },
 ];
+
+import { MORE_PAGES } from './pages-more';
+PAGES.push(...MORE_PAGES);
 
 export const PAGE_BY_SLUG: Record<string, SeoPage> = Object.fromEntries(PAGES.map((p) => [p.slug, p]));
 export const TOOL_PAGES = PAGES.filter((p) => p.kind === 'tool');

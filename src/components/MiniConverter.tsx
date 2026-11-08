@@ -28,7 +28,7 @@ const FONT_ROWS: { label: string; id: StyleId }[] = [
 ];
 const BULLETS = ['•', '→', '✓', '▪'];
 
-function CopyRow({ label, text }: { label?: string; text: string }) {
+function CopyRow({ label, text, copyLabel, copiedLabel }: { label?: string; text: string; copyLabel: string; copiedLabel: string }) {
   const [done, setDone] = useState(false);
   const copy = async () => {
     try {
@@ -51,13 +51,16 @@ function CopyRow({ label, text }: { label?: string; text: string }) {
         <span className="cp-out-value" translate="no">{text || '\u00a0'}</span>
       </div>
       <button type="button" className={'btn btn-primary cp-copy' + (done ? ' done' : '')} onClick={copy} disabled={!text}>
-        {done ? 'Copied' : 'Copy'}
+        {done ? copiedLabel : copyLabel}
       </button>
     </div>
   );
 }
 
-export default function MiniConverter({ mode }: { mode: Mode }) {
+export interface ConverterLabels { yourText: string; oneItem: string; copy: string; copied: string; bulletStyle: string }
+
+export default function MiniConverter({ mode, ui }: { mode: Mode; ui?: ConverterLabels }) {
+  const L = { text: ui?.yourText ?? 'Your text', items: ui?.oneItem ?? 'One item per line', copy: ui?.copy ?? 'Copy', copied: ui?.copied ?? 'Copied', bullet: ui?.bulletStyle ?? 'Bullet style' };
   const [text, setText] = useState('');
   const [bullet, setBullet] = useState(BULLETS[0]);
   const src = text || '';
@@ -75,7 +78,7 @@ export default function MiniConverter({ mode }: { mode: Mode }) {
 
   return (
     <div className="cp-tool card">
-      <label className="cp-label" htmlFor="cp-input">{mode === 'bullets' ? 'One item per line' : 'Your text'}</label>
+      <label className="cp-label" htmlFor="cp-input">{mode === 'bullets' ? L.items : L.text}</label>
       <textarea
         id="cp-input"
         className="cp-input"
@@ -86,14 +89,14 @@ export default function MiniConverter({ mode }: { mode: Mode }) {
         spellCheck={false}
       />
       {mode === 'bullets' ? (
-        <div className="cp-bullets" role="group" aria-label="Bullet style">
+        <div className="cp-bullets" role="group" aria-label={L.bullet}>
           {BULLETS.map((b) => (
             <button key={b} type="button" className="cp-chip" aria-pressed={bullet === b} onClick={() => setBullet(b)}>{b}</button>
           ))}
         </div>
       ) : null}
       <div className="cp-outs" aria-live="polite">
-        {outputs.map((o, i) => <CopyRow key={i} label={o.label} text={o.text} />)}
+        {outputs.map((o, i) => <CopyRow key={i} label={o.label} text={o.text} copyLabel={L.copy} copiedLabel={L.copied} />)}
       </div>
     </div>
   );

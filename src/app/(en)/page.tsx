@@ -1,4 +1,5 @@
 import LekhKit from '@/components/LekhKit';
+import { SiteFooter } from '@/components/ContentPage';
 import { SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 
 /* Structured data so Google understands this is a free web tool. Static content, no visitor input. */
@@ -21,7 +22,7 @@ export default function Page() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
-      <LekhKit />
+      <LekhKit footer={<SiteFooter />} />
     </>
   );
 }

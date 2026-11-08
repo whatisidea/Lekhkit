@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import ContentPage from '@/components/ContentPage';
+import ContentPage, { languageAlternates } from '@/components/ContentPage';
 import { PAGES, PAGE_BY_SLUG } from '@/lib/pages';
 import { IS_INDEXABLE, SITE_NAME, SITE_URL } from '@/lib/site';
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: { absolute: page.title },
     description: page.description,
-    alternates: { canonical: url },
+    alternates: { canonical: url, languages: languageAlternates(page) },
     robots: IS_INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },
     openGraph: { title: page.title, description: page.description, type: page.kind === 'guide' ? 'article' : 'website', siteName: SITE_NAME, url, locale: 'en_US' },
     twitter: { card: 'summary_large_image', title: page.title, description: page.description },

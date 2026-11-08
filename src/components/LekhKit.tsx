@@ -1,6 +1,5 @@
 'use client';
 
-import { SiteFooter } from './ContentPage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import TooltipLayer from './Tooltips';
@@ -21,7 +20,7 @@ interface ToastState { msg: string; ok?: boolean; action?: () => void; label?: s
 const BUL_RE = /^[•▪–➤✓→★] /;
 const NUM_RE = /^\d+[.)] /;
 
-export default function LekhKit() {
+export default function LekhKit({ footer }: { footer?: React.ReactNode }) {
   const ed = useEditor();
   const { ref: taRef, text, commit, undo, redo } = ed;
 
@@ -443,11 +442,6 @@ export default function LekhKit() {
       <main className="wrap" id="main">
         <section className="intro">
           <h1>Format your LinkedIn post</h1>
-          <ul className="trust" aria-label="Privacy">
-            <li><Icon name="check" />Free, no sign-up</li>
-            <li><Icon name="check" />Runs in your browser</li>
-            <li><Icon name="check" />Nothing is uploaded</li>
-          </ul>
         </section>
 
         <div className="grid">
@@ -583,7 +577,7 @@ export default function LekhKit() {
         </div>
       </main>
 
-      <SiteFooter />
+      {footer}
 
       <div className={'dock' + (dockOn ? ' on' : '')} aria-label="Quick copy">
         <span className="count" aria-hidden="true">{countTxt.replace(' characters', '')}</span>
