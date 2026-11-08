@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import SiteThemeToggle from './SiteThemeToggle';
 import MiniConverter from './MiniConverter';
+import LekhKit from './LekhKit';
+import { FaqList, LinkGrid, Sections } from './PageBody';
 import { PAGES, PAGE_BY_SLUG, TOOL_PAGES, GUIDE_PAGES, INFO_PAGES, type SeoPage } from '@/lib/pages';
 import { INTL_PAGES, LANGS, UI, intlPage, intlPagesFor } from '@/lib/i18n';
 import { SITE_NAME, SITE_URL } from '@/lib/site';
@@ -122,9 +124,38 @@ export default function ContentPage({ page }: { page: SeoPage }) {
     .map((s) => (lang ? intlPage(lang, s) : PAGE_BY_SLUG[s]))
     .filter((p): p is SeoPage => Boolean(p));
   const englishTwin = lang && page.group ? PAGES.find((p) => p.group === page.group) : undefined;
+  const relatedItems = [
+    ...related.map((r) => ({ href: pagePath(r), label: r.label })),
+    ...(englishTwin ? [{ href: pagePath(englishTwin), label: ui!.english, lang: 'en' }] : []),
+  ];
+
+  const body = (
+    <>
+      <Sections sections={page.sections} />
+      {page.faq?.length ? <FaqList title={ui ? ui.faq : 'Frequently asked questions'} items={page.faq} /> : null}
+      {relatedItems.length ? <LinkGrid title={ui ? ui.related : 'Related'} items={relatedItems} /> : null}
+    </>
+  );
+  const ld = <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(page)) }} />;
+
+  // English pages with a tool: the real editor sits at the top, the text underneath.
+  if (!lang && page.mode) {
+    return (
+      <>
+        {ld}
+        <LekhKit
+          heading={page.h1}
+          lead={page.intro}
+          below={<div className="wrap cp-below">{body}</div>}
+          footer={<SiteFooter />}
+        />
+      </>
+    );
+  }
+
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd(page)) }} />
+      {ld}
       <a className="skip" href="#main">{ui ? ui.skip : 'Skip to the content'}</a>
       <header className="top">
         <div className="wrap">
@@ -133,53 +164,29 @@ export default function ContentPage({ page }: { page: SeoPage }) {
         </div>
       </header>
 
-      <main id="main" className="wrap cp">
-        <nav className="cp-crumbs" aria-label="Breadcrumb">
-          <Link href="/">LekhKit</Link> <span aria-hidden="true">/</span> <span aria-current="page">{page.label}</span>
-        </nav>
-        <article className="cp-article">
-          <h1>{page.h1}</h1>
-          <p className="cp-lead">{page.intro}</p>
-          {page.mode ? <MiniConverter mode={page.mode} ui={ui} /> : null}
+      <main id="main">
+        <section className="cp-hero">
+          <div className="wrap">
+            <nav className="cp-crumbs" aria-label="Breadcrumb">
+              <Link href="/">LekhKit</Link> <span aria-hidden="true">/</span> <span aria-current="page">{page.label}</span>
+            </nav>
+            <h1>{page.h1}</h1>
+            <p className="cp-lead">{page.intro}</p>
+            {page.mode ? <MiniConverter mode={page.mode} ui={ui} /> : null}
+          </div>
+        </section>
+        <div className="wrap cp-below">
+          {body}
           {page.kind !== 'info' ? (
-            <p className="cp-cta">
-              {ui ? ui.ctaBefore : 'Writing a full post?'} <Link href="/">{ui ? ui.ctaLink : 'Open the LekhKit editor'}</Link>{' '}
-              {ui ? ui.ctaAfter : 'for bold, italic, lists, emoji and a live desktop and mobile preview.'}
-            </p>
-          ) : null}
-
-          {page.sections.map((s) => (
-            <section key={s.h2}>
-              <h2>{s.h2}</h2>
-              {s.paras?.map((p, i) => <p key={i}>{p}</p>)}
-              {s.list ? (s.ordered ? <ol>{s.list.map((l) => <li key={l}>{l}</li>)}</ol> : <ul>{s.list.map((l) => <li key={l}>{l}</li>)}</ul>) : null}
-            </section>
-          ))}
-
-          {page.faq?.length ? (
-            <section>
-              <h2>{ui ? ui.faq : 'Frequently asked questions'}</h2>
-              <dl className="cp-faq">
-                {page.faq.map((f) => (
-                  <div key={f.q}>
-                    <dt>{f.q}</dt>
-                    <dd>{f.a}</dd>
-                  </div>
-                ))}
-              </dl>
+            <section className="cp-cta-band">
+              <p>
+                {ui ? ui.ctaBefore : 'Writing a full post?'} <strong>{ui ? ui.ctaLink : 'Open the LekhKit editor'}</strong>{' '}
+                {ui ? ui.ctaAfter : 'for bold, italic, lists, emoji and a live desktop and mobile preview.'}
+              </p>
+              <Link className="btn btn-primary" href="/">{ui ? ui.ctaLink : 'Open the editor'}</Link>
             </section>
           ) : null}
-
-          {related.length || englishTwin ? (
-            <section>
-              <h2>{ui ? ui.related : 'Related'}</h2>
-              <ul className="cp-related">
-                {related.map((r) => <li key={pagePath(r)}><Link href={pagePath(r)}>{r.label}</Link></li>)}
-                {englishTwin ? <li><Link href={pagePath(englishTwin)} hrefLang="en" lang="en">{ui!.english}</Link></li> : null}
-              </ul>
-            </section>
-          ) : null}
-        </article>
+        </div>
       </main>
       <SiteFooter lang={lang} />
     </>

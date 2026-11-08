@@ -20,7 +20,7 @@ interface ToastState { msg: string; ok?: boolean; action?: () => void; label?: s
 const BUL_RE = /^[•▪–➤✓→★] /;
 const NUM_RE = /^\d+[.)] /;
 
-export default function LekhKit({ footer }: { footer?: React.ReactNode }) {
+export default function LekhKit({ footer, heading, lead, below }: { footer?: React.ReactNode; heading?: string; lead?: string; below?: React.ReactNode }) {
   const ed = useEditor();
   const { ref: taRef, text, commit, undo, redo } = ed;
 
@@ -441,7 +441,8 @@ export default function LekhKit({ footer }: { footer?: React.ReactNode }) {
 
       <main className="wrap" id="main">
         <section className="intro">
-          <h1>Format your LinkedIn post</h1>
+          <h1>{heading || 'Format your LinkedIn post'}</h1>
+          {lead ? <p className="intro-lead">{lead}</p> : null}
         </section>
 
         <div className="grid">
@@ -576,6 +577,8 @@ export default function LekhKit({ footer }: { footer?: React.ReactNode }) {
           </aside>
         </div>
       </main>
+
+      {below}
 
       {footer}
 
