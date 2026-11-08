@@ -17,6 +17,15 @@ type Device = 'mobile' | 'desktop';
 type Theme = 'light' | 'dark';
 interface ToastState { msg: string; ok?: boolean; action?: () => void; label?: string }
 
+/* LinkedIn can drop empty lines when a post is pasted. A blank line that holds one invisible character (U+2800) survives, and looks identical. */
+const BLANK_KEEPER = String.fromCharCode(0x2800);
+function forLinkedIn(text: string, keepBlank: boolean): string {
+  if (!keepBlank) return text;
+  const NL = String.fromCharCode(10);
+  const lines = text.replace(/\s+$/, '').split(NL);
+  return lines.map((l) => (l.trim() === '' ? BLANK_KEEPER : l)).join(NL);
+}
+
 const BUL_RE = /^[•▪–➤✓→★] /;
 const NUM_RE = /^\d+[.)] /;
 
@@ -28,6 +37,7 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
   const [theme, setTheme] = useState<Theme>('light');
   const [expanded, setExpanded] = useState(false);
   const [bullet, setBullet] = useState('•');
+  const [keepBlank, setKeepBlank] = useState(true);
   const [delim, setDelim] = useState('.');
   const [atts, setAtts] = useState<Attachment[]>([]);
   const [busy, setBusy] = useState(false);
@@ -67,6 +77,7 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
       const p = JSON.parse(store.get('ltf.profile') || 'null');
       if (p && p.name) setProfile((cur) => ({ ...cur, name: p.name, headline: p.headline || '', photo: typeof p.photo === 'string' ? p.photo : '' }));
     } catch { /* ignore a corrupt saved profile */ }
+    if (store.get('ltf.blank') === '0') setKeepBlank(false);
     const draft = store.get('ltf.draft');
     ed.reset(draft === null ? SAMPLE : draft);
     if (window.matchMedia('(max-width: 700px)').matches) setDevice('mobile');
@@ -103,6 +114,16 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
     document.addEventListener('selectionchange', on);
     return () => document.removeEventListener('selectionchange', on);
   }, [taRef, updateActive]);
+
+  /* ---------- the box grows with the post, so the page scrolls once (not the box inside the page) ---------- */
+  useEffect(() => {
+    const t = taRef.current;
+    if (!t) return;
+    const fit = () => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 2 + 'px'; };
+    fit();
+    window.addEventListener('resize', fit);
+    return () => window.removeEventListener('resize', fit);
+  }, [text, taRef]);
 
   /* ---------- formatting commands ---------- */
   const withRange = (fn: (x: string) => string) => {
@@ -379,7 +400,7 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
       } catch { /* fall through to the message */ }
       showToast('Copy did not work. Select the text and copy it by hand.');
     };
-    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(ok, fallback);
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(forLinkedIn(text, keepBlank)).then(ok, fallback);
     else fallback();
   };
 
@@ -539,10 +560,19 @@ export default function LekhKit({ footer, heading, lead, below }: { footer?: Rea
             <span className="sr" role="status">{live}</span>
 
             <p className="hint">Select text, then pick a style. Nothing is selected? The word at your cursor is styled.</p>
+            <label className="keepblank">
+              <input
+                type="checkbox"
+                checked={keepBlank}
+                onChange={(e) => { setKeepBlank(e.target.checked); store.set('ltf.blank', e.target.checked ? '1' : '0'); }}
+              />
+              <span>Keep blank lines when pasting into LinkedIn</span>
+            </label>
             <details className="know">
               <summary><Icon name="info" />Good to know<Icon name="chev" className="chev" /></summary>
               <ul>
                 <li>Styled text is made of special characters. It pastes into LinkedIn as it looks here, but it is not searchable and some screen readers read it badly. Use it for emphasis, not whole posts.</li>
+                <li>LinkedIn sometimes removes empty lines when you paste. “Keep blank lines” puts one invisible character on each empty line so your spacing survives. Turn it off if you would rather copy the text exactly as typed.</li>
                 <li>Attachments and mentions are preview only. Copying carries text, so add media and tag people inside LinkedIn.</li>
                 <li>The counter counts each styled letter as 2 characters to stay on the safe side. LinkedIn’s own count may differ.</li>
               </ul>

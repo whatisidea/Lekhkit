@@ -649,3 +649,10 @@ textarea#ed { background: var(--surface); }
 .intro:has(.intro-lead) { display: block; padding-top: 28px; padding-bottom: 20px; }
 .intro:has(.intro-lead) h1 { font-size: clamp(26px, 3.2vw, 38px); line-height: 1.12; letter-spacing: -.03em; }
 .intro:has(.intro-lead) .intro-lead { margin-top: 8px; font-size: 17px; line-height: 26px; max-width: 64ch; }
+
+/* Long posts: the box grows with the text, the style bar stays under the header, the preview stays in view */
+textarea#ed { resize: none; overflow-y: hidden; }
+.toolwrap { position: sticky; top: calc(57px + env(safe-area-inset-top, 0px)); z-index: 12; background: var(--surface); border-radius: 14px 14px 0 0; }
+@media (min-width: 981px) { .grid > .preview { position: sticky; top: 73px; } }
+.keepblank { display: flex; align-items: center; gap: 8px; padding: 0 16px 14px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+.keepblank input { width: 16px; height: 16px; accent-color: var(--blue); }
