@@ -17,7 +17,7 @@ export const SITE_URL = origin(process.env.NEXT_PUBLIC_SITE_URL);
 export const SITE_NAME = 'LekhKit';
 export const SITE_TITLE = 'LekhKit — LinkedIn Post Formatter';
 export const SITE_DESCRIPTION =
-  'Free LinkedIn post formatter. Bold, italic, underline, strikethrough, lists and emoji, with a live desktop and mobile preview. Runs in your browser. Nothing is uploaded.';
+  'Free LinkedIn post formatter and text generator. Make bold, italic, underline and strikethrough text, add bullet lists and emoji, and preview your post on desktop and mobile before you publish.';
 
 function verificationToken(value?: string): string | undefined {
   const token = (value || '').trim().replace(/^google-site-verification=/, '');
