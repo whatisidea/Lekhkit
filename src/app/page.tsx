@@ -13,6 +13,7 @@ const jsonLd = {
   browserRequirements: 'Requires a modern web browser',
   inLanguage: 'en',
   isAccessibleForFree: true,
+  image: SITE_URL + '/icon-512.png',
   offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
 };
 

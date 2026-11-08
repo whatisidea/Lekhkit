@@ -1,5 +1,6 @@
 'use client';
 
+import { SiteFooter } from './ContentPage';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Icon from './Icon';
 import TooltipLayer from './Tooltips';
@@ -582,11 +583,7 @@ export default function LekhKit() {
         </div>
       </main>
 
-      <footer className="site-foot">
-        <div className="wrap">
-          <p><strong translate="no">LekhKit</strong> · Free LinkedIn post formatter. Your text stays in your browser and is never uploaded.</p>
-        </div>
-      </footer>
+      <SiteFooter />
 
       <div className={'dock' + (dockOn ? ' on' : '')} aria-label="Quick copy">
         <span className="count" aria-hidden="true">{countTxt.replace(' characters', '')}</span>

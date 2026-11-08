@@ -15,6 +15,14 @@ export const metadata: Metadata = {
   description,
   applicationName: SITE_NAME,
   alternates: { canonical: '/' },
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: '48x48' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+      { url: '/icon-192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
+  },
   appleWebApp: { capable: true, title: SITE_NAME, statusBarStyle: 'default' },
   keywords: ['LinkedIn post formatter', 'LinkedIn bold text', 'LinkedIn italic text', 'unicode text generator'],
   robots: IS_INDEXABLE ? { index: true, follow: true } : { index: false, follow: false },

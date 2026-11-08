@@ -28,5 +28,4 @@ export const GOOGLE_VERIFICATION = verificationToken(process.env.NEXT_PUBLIC_GOO
 /** Only the production deployment should be indexed. Vercel preview deployments must not compete with it. */
 export const IS_INDEXABLE = !process.env.VERCEL_ENV || process.env.VERCEL_ENV === 'production';
 
-/** Pages listed in the sitemap. Add new public pages here (for example '/privacy' and '/about'). */
-export const PUBLIC_PATHS: string[] = ['/'];
+
